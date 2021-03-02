@@ -1,0 +1,79 @@
+*{margin: 0; padding:0}
+body { margin: 0; padding:0}         
+canvas {position: absolute;margin:0%;width: auto; height: auto;}
+.point{
+        display: none;
+    }
+@media(max-width:800px){
+    .point{
+    position: fixed;
+    z-index: 10;
+    width: 100%;
+    height: 60px;
+    background-color: transparent;
+    bottom: 0;
+    display: block;
+}
+button{
+    border: 1px solid rgba(136, 58, 34, 0.467);
+    /* background-color: transparent; */
+    background-color: rgb(224, 76, 7,.9);
+    border-radius: 100% 100% 100% 100%;
+
+
+    width: 70px;
+    height: 70px;
+
+}
+.point .controls-ba{
+    float: left;
+    width: 220px;
+    height: 10px;
+    background-color: transparent;
+    position: absolute;
+    margin-left: 2%;
+    margin-top: -100px;
+}
+.point .controls-ba .cima{
+    
+    margin-bottom: -100px;
+    margin-left: 5px;
+    float: left;
+}
+.point .controls-ba .baixo{
+    
+    
+    margin-left: 5px;
+    float: left;
+    margin-top: 98px;
+
+}
+.point .controls-ba .esq{
+    
+    margin-top: 50px;
+    float: left;
+}
+.point .controls-ba .dir{
+    
+    margin-top: 50px;
+    float: right;
+}
+.point .controls-ro{
+    float: right;
+    width: 200px;
+    height: 200px;
+    margin-top: -40px;
+}
+.point .controls-ro .dir{
+    float: left;
+    
+    border-radius: 5% 5% 5% 5%;
+    border: 1px solid black;
+}
+.point .controls-ro .esq{
+    float: left;
+    
+    border-radius: 5% 5% 5% 5%;
+    border: 1px solid black;
+}
+}

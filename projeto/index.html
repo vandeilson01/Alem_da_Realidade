@@ -1,0 +1,398 @@
+    <!DOCTYPE html>
+    <html> 
+    <head>     
+    <meta charset="utf-8"/>     
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>game</title>     
+    <link rel="stylesheet" href="css/style.css"/>
+    </head> 
+    <body>
+        <div class="point">
+            <div class="controls-ba">
+                <button class="esq">esquerda</button>
+                <button class="cima">cima</button>
+                <button class="baixo">baixo</button>            
+                <button class="dir">direita</button>
+            </div>
+
+            <div class="controls-ro">
+                <button class="dir">pra-esquerda</button>
+                <button class="esq">pra-direita</button>
+            </div>
+        </div>
+    <canvas>
+    </canvas>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.js"></script>    
+    <!--<script src="https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/OBJLoader.js"></script>-->
+     <!--<script src="model/MTLLoader.js"></script>     -->
+    <!--<script src="model/OBJLoader.js"></script>-->
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.min.js"></script>-->
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js"></script>-->
+    <!--<script src="https://threejs.org/examples/js/loaders/OBJLoader.js"></script>-->
+    <!--<script src="https://threejs.org/examples/js/loaders/MTLLoader.js"></script>-->
+    
+    <script src="https://github.com/saucecode/threejs-demos/blob/master/MTLLoader.js"></script>
+    <script src="https://github.com/saucecode/threejs-demos/blob/master/OBJLoader.js"></script>
+    
+    <!--<script src="https://threejs.org/examples/js/loaders/OBJMTLLoader.js"></script>-->
+    <script>         
+    var scene, camera, renderer, mesh;
+    var meshFloor, ambientLight, light;
+
+    var crate, crateTexture, crateNormalMap, crateBumpMap;
+    
+    
+
+    var keyboard = {};
+    var player = { height:1.8, speed:0.2, turnSpeed:Math.PI*0.02 };
+    var USE_WIREFRAME = false;
+///
+    var loadingScreen = {
+        scene: new THREE.Scene(),
+        camera: new THREE.PerspectiveCamera(90, 1280/720, 0.1, 100),
+        box: new THREE.Mesh(
+            new THREE.BoxGeometry(0.5, 0.5, 0.5),
+            new THREE.MeshBasicMaterial({color:0x44444f}) 
+        )
+    };
+    
+    var loadingManager;
+    var LOADING_MANAGER = null;
+    var RESOURCES_LOADED = true;
+    
+    
+    var material1 = new THREE.MeshBasicMaterial( {map: THREE.ImageUtils.loadTexture("img/novo.jpg") } );
+    var geometry1 = new THREE.BoxGeometry( 0.3, 13, 0.3); 
+    // var geometry1 = new THREE.CylinderGeometry( 2, 10, 5, 7 );
+    // var geometry1 = new THREE.SphereGeometry(90, 102, 62); 
+    // var geometry1 = new THREE.LatheGeometry(shape.getPoints(), 10, 30, 5.0); 
+    
+    var a = new THREE.Mesh( geometry1, material1); 
+    var b = new THREE.Mesh( geometry1, material1); 
+    var c = new THREE.Mesh( geometry1, material1); 
+    var d = new THREE.Mesh( geometry1, material1); 
+    var e = new THREE.Mesh( geometry1, material1); 
+    var f = new THREE.Mesh( geometry1, material1); 
+    var g = new THREE.Mesh( geometry1, material1); 
+    var h = new THREE.Mesh( geometry1, material1); 
+    var i = new THREE.Mesh( geometry1, material1); 
+    var j = new THREE.Mesh( geometry1, material1); 
+
+    function init(){
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(90, 1280/720, 0.1, 1000);
+///
+        loadingScreen.box.position.set(0, 0, 5);
+        loadingScreen.camera.lookAt(loadingScreen.box.position);
+        loadingScreen.scene.add(loadingScreen.box);
+        
+        /*
+        loadingManager = new THREE.LoadingManager();
+        
+        loadingManager.onStart = function(item, loaded, total){
+            console.log(item, loaded, total);
+            RESOURCES_LOADED = true;
+        };
+        loadingManager.onProgress = function(item, loaded, total){
+            console.log(item, loaded, total);
+            RESOURCES_LOADED = true;
+        };  
+        loadingManager.onLoad = function(){
+            console.log('loaded all resources');
+            RESOURCES_LOADED = true;
+        };
+        */
+        
+        
+        mesh = new THREE.Mesh(
+            new THREE.BoxGeometry(1,1,1),
+            new THREE.MeshPhongMaterial({color:0xff4444, wireframe:USE_WIREFRAME})
+        );
+        mesh.position.y += 1;
+        // The cube can have shadows cast onto it, and it can cast shadows
+        mesh.receiveShadow = true;
+        mesh.castShadow = true;
+        // scene.add(mesh);
+        
+        meshFloor = new THREE.Mesh(
+            new THREE.PlaneGeometry(100,109, 109,100),
+            // MeshBasicMaterial does not react to lighting, so we replace with MeshPhongMaterial
+            new THREE.MeshPhongMaterial({color:0xffffff, wireframe:USE_WIREFRAME})
+            // See threejs.org/examples/ for other material types
+        );
+        meshFloor.rotation.x -= Math.PI / 2;
+        // Floor can have shadows cast onto it
+        meshFloor.receiveShadow = true;
+        scene.add(meshFloor);
+        
+        
+        // LIGHTS
+        ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        
+        light = new THREE.PointLight(0xffffff, 0.8, 28);
+        light.position.set(-3,6,-3);
+        light.castShadow = true;
+        light.shadow.camera.near = 0.1;
+        light.shadow.camera.far = 25;
+        scene.add(light);
+
+
+        var textureLoader = new THREE.TextureLoader(/*loadingManager*/);
+        crateTexture = new textureLoader.load('img/novo.jpg');
+        // crateBumpMap = new textureLoader.load('game_1.jpg');
+        // crateNormalMap = new textureLoader.load('game_2.jpg');
+        
+    
+        crate = new THREE.Mesh(
+            new THREE.BoxGeometry(3, 3, 3),
+            new THREE.MeshPhongMaterial({
+                color:0xffffff,
+                map: crateTexture,
+                bumpMap: crateBumpMap,
+                normalMap: crateNormalMap
+                })
+        );
+        scene.add(crate);
+        crate.position.set(2.5, 3/2, 12.5);
+        crate.receiveShadow = true;
+        crate.castShadow = true;
+        
+
+scene.add(a);
+scene.add(b);
+scene.add(c);
+scene.add(d);
+scene.add(e);
+scene.add(f);
+scene.add(g);
+scene.add(h);
+scene.add(i);
+scene.add(j);
+
+
+
+a.rotation.z += 10;
+a.rotation.y += 100;
+
+b.rotation.z += 20;
+b.rotation.y += 200;
+
+c.rotation.z += 30;
+c.rotation.y += 300;
+
+d.rotation.z += 40;
+d.rotation.y += 400;
+
+e.rotation.z += 50;
+e.rotation.y += 500;
+
+f.rotation.z += 60;
+f.rotation.y += 600;
+
+g.rotation.z += 70;
+g.rotation.y += 700;
+
+h.rotation.z += 80;
+h.rotation.y += 800;
+
+i.rotation.z += 90;
+i.rotation.y += 900;
+
+j.rotation.z+= 100;
+j.rotation.y += 1000;
+
+
+
+
+a.position.y = 10;
+
+b.position.y  = 10;
+
+c.position.y  = 10;
+
+d.position.y  = 10;
+
+e.position.y  = 10;
+
+f.position.y  = 10;
+
+g.position.y  = 10;
+
+h.position.y  = 10;
+
+i.position.y  = 10;
+
+j.position.y  = 10;
+
+    var ge = new THREE.SphereGeometry( 5, 32, 32 );
+var ma = new THREE.MeshBasicMaterial( {map: THREE.ImageUtils.loadTexture("img/novo.jpg") } );
+var sp = new THREE.Mesh( ge, ma );
+scene.add( sp );
+
+sp.position.y  = 10;
+
+
+
+        /*
+        var mtlLoader = new THREE.MTLLoader();
+        mtlLoader.load('clo/tent_smallClosed.mtl', function(materials){
+
+            materials.preload();
+            var objLoader = new THREE.OBJLoader();
+            objLoader.setMaterials(materials);
+
+            objLoader.load('clo/tent_smallClosed.obj', function(mesh) {
+                scene.add(mesh);
+                mesh.position.set(-3, 0, 4);
+            });
+
+        });
+        */
+        
+        
+        
+        
+        camera.position.set(0, player.height, -5);
+        camera.lookAt(new THREE.Vector3(0,player.height,0));
+        
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight); 
+        
+
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.BasicShadowMap;
+
+        document.body.appendChild(renderer.domElement);
+        
+        animate();
+
+    }
+
+    function animate(){
+///
+        if(RESOURCES_LOADED == false){
+            requestAnimationFrame(animate);
+            
+            loadingScreen.box.position.x -= 0.05;
+            if(loadingScreen.box.position.x < -10) loadingScreen.box.position.x = 10;
+            loadingScreen.box.position.y = Math.sin(loadingScreen.box.position.x);
+            
+            renderer.render(loadingScreen.scene, loadingScreen.camera);
+            return;
+        }
+        requestAnimationFrame(animate);
+        
+        mesh.rotation.x += 0.01;
+        mesh.rotation.y += 0.02;
+        
+        a.rotation.x += 0.004;
+b.rotation.y += 0.004;
+c.rotation.x += 0.004;
+d.rotation.y += 0.004;
+e.rotation.x += 0.004;
+f.rotation.y += 0.004;
+g.rotation.x += 0.004;
+h.rotation.y += 0.004;
+i.rotation.x += 0.004;
+j.rotation.y += 0.004;
+        
+        // Keyboard movement inputs
+        if(keyboard[87]){ // W key
+            camera.position.x -= Math.sin(camera.rotation.y) * player.speed;
+            camera.position.z -= -Math.cos(camera.rotation.y) * player.speed;
+        }
+        if(keyboard[83]){ // S key
+            camera.position.x += Math.sin(camera.rotation.y) * player.speed;
+            camera.position.z += -Math.cos(camera.rotation.y) * player.speed;
+        }
+        if(keyboard[65]){ // A key
+            // Redirect motion by 90 degrees
+            camera.position.x += Math.sin(camera.rotation.y + Math.PI/2) * player.speed;
+            camera.position.z += -Math.cos(camera.rotation.y + Math.PI/2) * player.speed;
+        }
+        if(keyboard[68]){ // D key
+            camera.position.x += Math.sin(camera.rotation.y - Math.PI/2) * player.speed;
+            camera.position.z += -Math.cos(camera.rotation.y - Math.PI/2) * player.speed;
+        }
+        
+        // Keyboard turn inputs
+        if(keyboard[37]){ // left arrow key
+            camera.rotation.y -= player.turnSpeed;
+        }
+        if(keyboard[39]){ // right arrow key
+            camera.rotation.y += player.turnSpeed;
+        }
+        
+        renderer.render(scene, camera);
+        
+        controls();
+    }
+
+    function controls(){
+
+        var player = { height:0.008, speed:0.001, turnSpeed:Math.PI*0.0001 };
+
+        var direita = document.querySelector('.point .controls-ba .dir');
+        var esquerda = document.querySelector('.point .controls-ba .esq');
+
+        var cima = document.querySelector('.point .controls-ba .cima');
+        var baixo = document.querySelector('.point .controls-ba .baixo');
+
+
+        var esq = document.querySelector('.point .controls-ro .esq');
+        var dir = document.querySelector('.point .controls-ro .dir');
+
+        cima.addEventListener('click', function(){
+            camera.position.x -= Math.sin(camera.rotation.y) * player.speed;
+            camera.position.z -= -Math.cos(camera.rotation.y) * player.speed;
+        });
+
+        baixo.addEventListener('click', function(){
+            camera.position.x += Math.sin(camera.rotation.y) * player.speed;
+            camera.position.z += -Math.cos(camera.rotation.y) * player.speed;
+        });
+
+        direita.addEventListener('click', function(){
+            camera.position.x += Math.sin(camera.rotation.y - Math.PI/2) * player.speed;
+            camera.position.z += -Math.cos(camera.rotation.y - Math.PI/2) * player.speed;
+        });
+        
+        esquerda.addEventListener('click', function(){
+            camera.position.x += Math.sin(camera.rotation.y + Math.PI/2) * player.speed;
+            camera.position.z += -Math.cos(camera.rotation.y + Math.PI/2) * player.speed;
+            
+        });
+
+        // 
+
+        esq.addEventListener('click', function(){
+            camera.rotation.y += player.turnSpeed;
+        });
+
+        dir.addEventListener('click', function(){
+            camera.rotation.y -= player.turnSpeed;
+        });
+        
+        // Keyboard turn inputs
+        
+    }
+
+
+    function keyDown(event){
+        keyboard[event.keyCode] = true;
+    }
+
+    function keyUp(event){
+        keyboard[event.keyCode] = false;
+    }
+
+    window.addEventListener('keydown', keyDown);
+    window.addEventListener('keyup', keyUp);
+
+    window.onload = init;
+
+
+    </script> 
+    </body>
+    </html>
