@@ -15,7 +15,7 @@ Visual Game de um mundo 3d 🚀
 ```
 $ git init
 
-$ git remote add origin https://github.com/vandeilson01/converso_moeda.git
+$ git remote add origin https://github.com/vandeilson01/Alem_da_Realidade.git
 
 $ git pull origin master
 ```
